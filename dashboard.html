@@ -7,23 +7,17 @@
 <!-- Create a div where the graph will take place -->
 <div id="the_jordan_effect"></div>
   <style>
-    circle,
     rect {
-      fill: none;
+      fill: steelblue;
       stroke: black;
     }
   </style>
-  <script type="text/javascript" src="https://widgets.sports-reference.com/wg.fcgi?css=1&site=br&url=%2Fleagues%2FMLB%2F1969-misc.shtml&div=div_teams_miscellaneous"></script>
   <body>
     <script>
-        // get table data
-        var me = document.querySelector('script[src="https://widgets.sports-reference.com/wg.fcgi?css=1&site=br&url=%2Fleagues%2FMLB%2F1900-misc.shtml&div=div_teams_miscellaneous"]');
-        console.log(me);
-
         // set the dimensions and margins of the graph
         var margin = {top: 10, right: 30, bottom: 30, left: 60},
-            width = 460 - margin.left - margin.right,
-            height = 400 - margin.top - margin.bottom;
+            width = 700 - margin.left - margin.right,
+            height = 700 - margin.top - margin.bottom;
         
         // append the svg object to the body of the page
         var svg = d3.select("#the_jordan_effect")
@@ -34,36 +28,47 @@
             .attr("transform",
                     "translate("+margin.left+", "+margin.top+")");
         
-        //Read the data
-        d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/2_TwoNum.csv", function(data) {
+          //Read the data
+        const data = d3.csv("https://raw.githubusercontent.com/Zman94/the_jordan_effect_dashboard/master/data/Attendance_plus_final.csv", function(data) {
+
+        // sort data
+        data.sort(function(b, a) {
+          return a.AttendG - b.AttendG;
+        });
+
+        console.log(data);
         
-            // Add X axis
-        var x = d3.scaleLinear()
-            .domain([0, 4000])
-            .range([ 0, width ]);
-            svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x));
-        
-            // Add Y axis
+        // X axis
+        var x = d3.scaleBand()
+          .range([ 0, width ])
+          .domain(data.map(function(d) { return d.Tm; }))
+          .padding(0.2);
+        svg.append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x))
+          .selectAll("text")
+            .attr("transform", "translate(-10,0)rotate(-45)")
+            .style("text-anchor", "end");
+
+        // Add Y axis
         var y = d3.scaleLinear()
-            .domain([0, 500000])
-            .range([ height, 0]);
-            svg.append("g")
-            .call(d3.axisLeft(y));
-        
-            // Add dots
+          .domain([0, 13000])
+          .range([ height, 0]);
+        svg.append("g")
+          .call(d3.axisLeft(y));
+
+        // Add dots
         svg.append('g')
-            .selectAll("dot")
+            .selectAll("rect")
             .data(data)
             .enter()
-            .append("circle")
-                .attr("cx", function (d) { return x(d.GrLivArea); } )
-                .attr("cy", function (d) { return y(d.SalePrice); } )
-                .attr("r", 1.5)
-                .style("fill", "#69b3a2")
-        
-        })
+            .append("rect")
+                .attr("width", x.bandwidth())
+                .attr("height", function (d) { return y(d.AttendG.replace(/\,/g,'')); } )
+                .attr("x", function(d) { return x(d.Tm); })
+                .attr("y", function(d) { return height-y(d.AttendG.replace(/\,/g,'')); });
+                // .attr("fill", function(d) { return d.TeamColor }; );
+        });
     </script>
   </body>
 </html>
