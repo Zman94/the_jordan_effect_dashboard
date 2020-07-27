@@ -23,28 +23,28 @@
   color: #fff;
   border-radius: 2px;
   pointer-events: none;
-}
+  }
 
-/* Creates a small triangle extender for the tooltip */
-.d3-tip:after {
-  box-sizing: border-box;
-  display: inline;
-  font-size: 10px;
-  width: 100%;
-  line-height: 1;
-  color: rgba(0, 0, 0, 0.8);
-  position: absolute;
-  pointer-events: none;
-}
-/* Southward tooltips */
-.d3-tip.s:after {
-  content: "\25B2";
-  margin: 0 0 1px 0;
-  top: -8px;
-  left: 0;
-  text-align: center;
-}
-    </style>
+  /* Creates a small triangle extender for the tooltip */
+  .d3-tip:after {
+    box-sizing: border-box;
+    display: inline;
+    font-size: 10px;
+    width: 100%;
+    line-height: 1;
+    color: rgba(0, 0, 0, 0.8);
+    position: absolute;
+    pointer-events: none;
+  }
+  /* Southward tooltips */
+  .d3-tip.s:after {
+    content: "\25B2";
+    margin: 0 0 1px 0;
+    top: -8px;
+    left: 0;
+    text-align: center;
+  }
+  </style>
   <body>
     <h3>Year</h3>
     <div class="row align-items-center">
@@ -82,7 +82,7 @@
           .attr("class", "d3-tip")
           .offset([50, 0])
           .direction('s')
-          .html(function(d) { return d.TmName + " had an average<br>attendance/game of " + d.AttendG + " in " + cur_year; });
+          .html(function(d) { return d.TmName + " had an average<br>attendance/game of " + d.AttendG + " in " + d.Year; });
         svg.call(tool_tip);
 
         var mouseover = function(d) {
@@ -92,12 +92,21 @@
             .style("opacity", 0.5)
         }
         var mouseleave = function(d) {
-          tool_tip.hide;
+          tool_tip.hide(d);
           d3.select(this)
             .style("stroke-width", "1")
             .style("opacity", 1)
         }
 
+        var mouseclick = function(d) {
+          tool_tip.hide(d);
+          drawDetailCanvas(d.Tm);
+        }
+        var mousedetailclick = function(d) {
+          console.log("I don't do anything yet");
+          // tool_tip.hide;
+          // drawDetailCanvas(d.Tm);
+        }
 
         // Modify Slider Attributes
         var sliderTime = d3.sliderBottom()
@@ -188,10 +197,67 @@
           // Tooltips on bars
           svg.selectAll("rect").data(cur_year_data)
             .on("mouseover", mouseover)
-            .on("mouseleave", mouseleave);
+            .on("mouseleave", mouseleave)
+            .on("click", mouseclick);
 
           cur_rects.exit().remove();
           
+        }
+
+        /**** Function to draw year over year change for a specific team ****/
+        function drawDetailCanvas(team) {
+          var cur_team_data = data.filter(function(d){ return d.Tm == team});
+          
+          // Clear current graph
+          clearGraphHelper();
+
+          x.domain(cur_team_data.map(function(d) { return d.Year; }));
+          xAxis.transition().duration(1000).call(d3.axisBottom(x))
+            .selectAll("text")
+            .attr("transform", "translate(-10,0)rotate(-45)")
+            .style("text-anchor", "end");;
+
+          // Update the Y axis
+          y_max = d3.max(cur_team_data, function(d) { return Number(d.AttendG.replace(/\,/g,'')) });
+          y.domain([0, y_max]);
+          yAxis.transition().duration(1000).call(d3.axisLeft(y));
+
+          cur_rects = svg.selectAll("rect").data(cur_team_data);
+
+          // Add bars
+          cur_rects.enter()
+            .append("rect")
+            .merge(cur_rects)
+            .transition()
+            .duration(1000)
+                .attr("width", x.bandwidth())
+                .attr("height", function (d) {
+                  // console.log(height-y(d.AttendG.replace(/\,/g,'')));
+                  return height-y(d.AttendG.replace(/\,/g,'')); })
+                .attr("x", function(d) {
+                  // console.log(x(d.Tm));
+                  return x(d.Year); })
+                .attr("y", function(d) {
+                  // console.log(d.AttendG.replace(/\,/g,''));
+                  return y(d.AttendG.replace(/\,/g,'')); } )
+                .attr("fill", function(d) {
+                  // console.log(d.TmColor);
+                  return d.TmColor; });
+          svg.selectAll("rect").data(cur_team_data)
+            .append("svg:title")
+            .text(function(d) { return d.Tm; });
+
+          // Tooltips on bars
+          svg.selectAll("rect").data(cur_team_data)
+            .on("mouseover", mouseover)
+            .on("mouseleave", mouseleave)
+            .on("click", mousedetailclick);
+
+          cur_rects.exit().remove();
+          
+        }
+        function clearGraphHelper() {
+          svg.selectAll("rect").remove();
         }
       });
     </script>
