@@ -6,6 +6,9 @@
 <script src="https://unpkg.com/d3-simple-slider"></script>
 <script src="d3-tip.js"></script>
 
+<!-- Return to main viz -->
+<button id="retButton">Return to Home Graph</button>
+
 <!-- Create a div where the graph will take place -->
 <div id="the_jordan_effect"></div>
   <style>
@@ -16,13 +19,13 @@
   <!-- Tooltip styling -->
   <style>   
   .d3-tip {
-  line-height: 1;
-  font-weight: bold;
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.8);
-  color: #fff;
-  border-radius: 2px;
-  pointer-events: none;
+    line-height: 1;
+    font-weight: bold;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 2px;
+    pointer-events: none;
   }
 
   /* Creates a small triangle extender for the tooltip */
@@ -52,9 +55,12 @@
       <div class="col-sm"><div id="slider-time"></div></div>
     </div>
     <script>
+      // Start year
+      var cur_year = 2019;
+
       // set the dimensions and margins of the graph
       var margin = {top: 10, right: 30, bottom: 30, left: 60},
-          width = 700 - margin.left - margin.right,
+          width = 1200 - margin.left - margin.right,
           height = 700 - margin.top - margin.bottom;
       
       // Time
@@ -71,8 +77,6 @@
           .attr("transform",
                   "translate("+margin.left+", "+margin.top+")");
 
-      // Start year
-      var cur_year = 2019;
       // Read the data and draw the first scene
       d3.csv("https://raw.githubusercontent.com/Zman94/the_jordan_effect_dashboard/master/data/Attendance_plus_final.csv", function(data) {
 
@@ -102,11 +106,6 @@
           tool_tip.hide(d);
           drawDetailCanvas(d.Tm);
         }
-        var mousedetailclick = function(d) {
-          console.log("I don't do anything yet");
-          // tool_tip.hide;
-          // drawDetailCanvas(d.Tm);
-        }
 
         // Modify Slider Attributes
         var sliderTime = d3.sliderBottom()
@@ -118,9 +117,9 @@
           .tickValues(dataTime)
           .default(new Date(2019, 10, 3))
           .on('onchange', num => {
-            cur_year = num;
-            drawMainCanvas(d3.timeFormat('%Y')(num));
-            d3.select('p#value-time').text(d3.timeFormat('%Y')(num));
+            cur_year = d3.timeFormat('%Y')(num);
+            drawMainCanvas(cur_year);
+            d3.select('p#value-time').text(cur_year);
           })
 
         var gTime = d3.select('div#slider-time')
@@ -135,6 +134,13 @@
 
         d3.select('p#value-time').text(d3.timeFormat('%Y')(sliderTime.value()));
 
+        // Button Logic
+        var retButton = document.getElementById("retButton").onclick =
+          function() {
+            console.log(cur_year);
+            drawMainCanvas(cur_year);
+          };
+
         // X axis init
         var x = d3.scaleBand()
           .range([ 0, width ])
@@ -146,13 +152,16 @@
         var y = d3.scaleLinear()
           .range([ height, 0]);
         var yAxis = svg.append("g");
-          // .call(d3.axisLeft(y));
 
         // Initialize at first year (2019)
         drawMainCanvas(cur_year);
 
         /**** Scene draw helper ****/
         function drawMainCanvas(data_year) {
+          // hide return to main viz button
+          d3.select("button")
+            .style("visibility", "hidden");
+
           // Grab this year's data and sort
           var cur_year_data = data.filter(function(d){ return d.Year == data_year.toString()})
           // Debugging
@@ -206,11 +215,12 @@
 
         /**** Function to draw year over year change for a specific team ****/
         function drawDetailCanvas(team) {
+          // Show return to main viz button
+          d3.select("button")
+            .style("visibility", "visible");
+
           var cur_team_data = data.filter(function(d){ return d.Tm == team});
           
-          // Clear current graph
-          clearGraphHelper();
-
           x.domain(cur_team_data.map(function(d) { return d.Year; }));
           xAxis.transition().duration(1000).call(d3.axisBottom(x))
             .selectAll("text")
@@ -250,14 +260,9 @@
           // Tooltips on bars
           svg.selectAll("rect").data(cur_team_data)
             .on("mouseover", mouseover)
-            .on("mouseleave", mouseleave)
-            .on("click", mousedetailclick);
+            .on("mouseleave", mouseleave);
 
           cur_rects.exit().remove();
-          
-        }
-        function clearGraphHelper() {
-          svg.selectAll("rect").remove();
         }
       });
     </script>
