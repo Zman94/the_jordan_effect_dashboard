@@ -1,10 +1,11 @@
 <!-- /*
 TODO:
 combine Marlins 
-Add world series winner marker
-Fix slider
+Fix slider spacing
+slider update after release
 Set description up top
 refactor tooltip
+Change star jpeg
 */ -->
 <!DOCTYPE html>
 <meta charset="utf-8">
@@ -87,6 +88,20 @@ refactor tooltip
       // Read the data and draw the first scene
       d3.csv("https://raw.githubusercontent.com/Zman94/the_jordan_effect_dashboard/master/data/Attendance_plus_final.csv", function(data) {
 
+        // Setup WS trophy picture overlay
+        svg.append('defs')
+          .append('pattern')
+            .attr('id', 'ws_background')
+            .attr('patternUnits', 'userSpaceOnUse')
+            .attr('width', 100)
+            .attr('height', 100)
+          .append('svg:image')
+            .attr("xlink:href", "https://thumbs.dreamstime.com/b/repeating-star-pattern-background-vector-graphic-design-repeating-star-pattern-background-114540501.jpg")
+                .attr("width", 200)
+                .attr("height", 200)
+                .attr("x", 0)
+                .attr("y", 0);
+
         // Setup the tool tip.  Note that this is just one example, and that many styling options are available.
         // See original documentation for more details on styling: http://labratrevenge.com/d3-tip/
         var tool_tip = d3.tip()
@@ -111,7 +126,7 @@ refactor tooltip
 
         var mouseclick = function(d) {
           tool_tip.hide(d);
-          drawDetailCanvas(d.Tm);
+          drawDetailCanvas(d.TmName);
         }
 
         // Modify Slider Attributes
@@ -144,7 +159,6 @@ refactor tooltip
         // Button Logic
         var retButton = document.getElementById("retButton").onclick =
           function() {
-            console.log(cur_year);
             drawMainCanvas(cur_year);
           };
 
@@ -219,10 +233,19 @@ refactor tooltip
                   return y(d.AttendG.replace(/\,/g,'')); } )
                 .attr("fill", function(d) {
                   // console.log(d.TmColor);
-                  return d.TmColor; });
-          svg.selectAll("rect").data(cur_year_data)
-            .append("svg:title")
-            .text(function(d) { return d.Tm; });
+                  console.log(d.WSWin);
+                  if (d.WSWin == "TRUE") {
+                    return  'url(#ws_background)';
+                  }
+                  else
+                    return d.TmColor; });
+
+          // Add average line
+          svg.append("line")
+            .attr("x1", 0)
+            .attr("y1", 500)
+            .attr("x2", 500)
+            .attr("y2", 500);
 
           // Tooltips on bars
           svg.selectAll("rect").data(cur_year_data)
@@ -236,8 +259,7 @@ refactor tooltip
 
         /**** Function to draw year over year change for a specific team ****/
         function drawDetailCanvas(team) {
-          var cur_team_data = data.filter(function(d){ return d.Tm == team});
-          console.log(svg.selectAll("#titel"));
+          var cur_team_data = data.filter(function(d){ return d.TmName == team});
           
           // Title
           svg.selectAll("#title").remove();
@@ -284,10 +306,23 @@ refactor tooltip
                   return y(d.AttendG.replace(/\,/g,'')); } )
                 .attr("fill", function(d) {
                   // console.log(d.TmColor);
-                  return d.TmColor; });
+                  console.log(d.WSWin);
+                  if (d.WSWin == "TRUE") {
+                    return  'url(#ws_background)';
+                  }
+                  else
+                    return d.TmColor; });
+
           svg.selectAll("rect").data(cur_team_data)
             .append("svg:title")
             .text(function(d) { return d.Tm; });
+
+          // holder.append("line")          // attach a line
+          //   .style("stroke", "black")  // colour the line
+          //   .attr("x1", 100)     // x position of the first end of the line
+          //   .attr("y1", 50)      // y position of the first end of the line
+          //   .attr("x2", 800)     // x position of the second end of the line
+          //   .attr("y2", 150);    // y position of the second end of the line
 
           // Tooltips on bars
           svg.selectAll("rect").data(cur_team_data)
