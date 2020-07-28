@@ -1,3 +1,11 @@
+<!-- /*
+TODO:
+combine Marlins 
+Add world series winner marker
+Fix slider
+Set description up top
+refactor tooltip
+*/ -->
 <!DOCTYPE html>
 <meta charset="utf-8">
 
@@ -49,7 +57,6 @@
   }
   </style>
   <body>
-    <h3>Year</h3>
     <div class="row align-items-center">
       <div class="col-sm-2"><p id="value-time"></p></div>
       <div class="col-sm"><div id="slider-time"></div></div>
@@ -59,7 +66,7 @@
       var cur_year = 2019;
 
       // set the dimensions and margins of the graph
-      var margin = {top: 10, right: 30, bottom: 30, left: 60},
+      var margin = {top: 30, right: 30, bottom: 30, left: 60},
           width = 1200 - margin.left - margin.right,
           height = 700 - margin.top - margin.bottom;
       
@@ -119,7 +126,7 @@
           .on('onchange', num => {
             cur_year = d3.timeFormat('%Y')(num);
             drawMainCanvas(cur_year);
-            d3.select('p#value-time').text(cur_year);
+            d3.select('p#value-time').text("Current year: " + cur_year);
           })
 
         var gTime = d3.select('div#slider-time')
@@ -132,7 +139,7 @@
 
         gTime.call(sliderTime);
 
-        d3.select('p#value-time').text(d3.timeFormat('%Y')(sliderTime.value()));
+        d3.select('p#value-time').text("Current year: " + d3.timeFormat('%Y')(sliderTime.value()));
 
         // Button Logic
         var retButton = document.getElementById("retButton").onclick =
@@ -156,14 +163,28 @@
         // Initialize at first year (2019)
         drawMainCanvas(cur_year);
 
+        // Setup title text
+        svg.append("text").attr("id", "title");
+
         /**** Scene draw helper ****/
         function drawMainCanvas(data_year) {
+          // Grab this year's data and sort
+          var cur_year_data = data.filter(function(d){ return d.Year == data_year.toString()})
+
+          // Title
+          svg.selectAll("#title").remove();
+          svg.append("text")
+            .attr("id", "title")
+            .attr("x", (width / 2))             
+            .attr("y", 0 - (margin.top / 2))
+            .attr("text-anchor", "middle")  
+            .style("font-size", "20px") 
+            .text("Average Game Attendance in " + data_year);
+
           // hide return to main viz button
           d3.select("button")
             .style("visibility", "hidden");
 
-          // Grab this year's data and sort
-          var cur_year_data = data.filter(function(d){ return d.Year == data_year.toString()})
           // Debugging
           // console.log(cur_year_data);
           // Update the X axis
@@ -215,12 +236,23 @@
 
         /**** Function to draw year over year change for a specific team ****/
         function drawDetailCanvas(team) {
+          var cur_team_data = data.filter(function(d){ return d.Tm == team});
+          console.log(svg.selectAll("#titel"));
+          
+          // Title
+          svg.selectAll("#title").remove();
+          svg.append("text")
+            .attr("id", "title")
+            .attr("x", (width / 2))             
+            .attr("y", 0 - (margin.top / 2))
+            .attr("text-anchor", "middle")  
+            .style("font-size", "20px") 
+            .text(cur_team_data[0].TmName + " Average Game Attendance per Year");
+
           // Show return to main viz button
           d3.select("button")
             .style("visibility", "visible");
 
-          var cur_team_data = data.filter(function(d){ return d.Tm == team});
-          
           x.domain(cur_team_data.map(function(d) { return d.Year; }));
           xAxis.transition().duration(1000).call(d3.axisBottom(x))
             .selectAll("text")
