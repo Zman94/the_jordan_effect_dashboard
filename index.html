@@ -282,6 +282,9 @@ Set description up top
         /**** Function to draw year over year change for a specific team ****/
         function drawDetailCanvas(team) {
           var cur_team_data = data.filter(function(d){ return d.TmName == team});
+          cur_team_data.sort(function(x, y){
+            return d3.ascending(x.Year, y.Year)
+          })
           
           // Title
           svg.selectAll("#title").remove();
