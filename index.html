@@ -12,6 +12,39 @@ Set description up top
 
 <!-- Return to main viz -->
 <button id="retButton">Return to Home Graph</button>
+<style>
+  .header img {
+  float: left;
+  width: 100px;
+  height: 200px;
+  background: #555;
+  }
+
+  .header h1 {
+    position: relative;
+    top: 18px;
+    left: 10px;
+  }
+  .header h3 {
+    position: relative;
+    top: 18px;
+    left: 10px;
+  }
+  .header p {
+    position: relative;
+    top: 18px;
+    left: 10px;
+  }
+</style>
+<div class="header">
+  <img src="https://clipartart.com/images/red-sox-world-series-trophy-clipart-4.png"/>
+  <h1 style="font-family: Helvetica">Winning Sales</h1>
+  <h3 style="font-family: Helvetica">Understanding how winning the World Series<br>affects a team's ticket sales.</h3>
+  <p>This dashboard explores the effect that winning has on ticket sales in baseball over the past 50 years.<br>
+    Use the scroll bar to explore each year's ticket sales each team in the MLB that year.  To get detailed<br>
+    information on a team's yearly sales, click that team's bar. Hovering over a bar will provide the exact<br>
+    value for that instance.<br><br><br><br></p>
+</div>
 
 <!-- Create a div where the graph will take place -->
 <div id="the_jordan_effect"></div>
@@ -213,7 +246,7 @@ Set description up top
           y.domain([0, y_max]);
           yAxis.transition().duration(400).call(d3.axisLeft(y));
 
-          cur_rects = svg.selectAll("rect").data(cur_year_data);
+          cur_rects = svg.selectAll("#bargraph").data(cur_year_data);
 
           // Add bars
           cur_rects.enter()
@@ -221,6 +254,7 @@ Set description up top
             .merge(cur_rects)
             .transition().duration(400)
             .duration(1000)
+                .attr("id", "bargraph")
                 .attr("width", x.bandwidth())
                 .attr("height", function (d) {
                   // console.log(height-y(d.AttendG.replace(/\,/g,'')));
@@ -269,6 +303,61 @@ Set description up top
             .style("font-size", "20px") 
             .text("Avg " + Math.round(avg));
 
+          key_width = 175;
+          // Add a key
+          svg.selectAll("#key").remove();
+          svg.append("rect")
+            .data(cur_year_data)
+            .attr("id", "key")
+            .attr("stroke-width", 2)
+            .attr("width", key_width)
+            .attr("height", 26)
+            .attr("x", width-key_width)
+            .attr("y", 0)
+            .attr("fill", "white")
+            .attr("fill-opacity", ".4");
+
+          if (data_year == 1994) {
+            // Add a key fill
+            svg.selectAll("#keyfill").remove();
+          }
+          else {
+            svg.selectAll("#keyfill").remove();
+            svg.append("rect")
+              .attr("id", "keyfill")
+              .attr("stroke-width", 2)
+              .attr("width", 20)
+              .attr("height", 20)
+              .attr("x", width-(key_width-3))
+              .attr("y", 3)
+              .attr("fill", 'url(#ws_background)')
+              .attr("fill-opacity", ".8");
+          }
+
+          // Key text
+          svg.selectAll("#keytxt").remove();
+          svg.append("text")
+            .attr("id", "keytxt")
+            .attr("x", function() {
+              if (data_year == 1994)
+                return width-(key_width-3)
+              else
+                return width-(key_width-29)
+            })
+            .attr("y", 18)
+            .style("font-size", function() { 
+              if (data_year == 1994)
+                return "15px"
+              else
+                return "16px"
+            })
+            .text(function() {
+              if (data_year == 1994)
+                return "No WS due to player strike";
+              else
+                return "World Series Winner";
+            });
+
           // Tooltips on bars
           svg.selectAll("rect").data(cur_year_data)
             .on("mouseover", mouseover)
@@ -311,7 +400,7 @@ Set description up top
           y.domain([0, y_max]);
           yAxis.transition().duration(400).call(d3.axisLeft(y));
 
-          cur_rects = svg.selectAll("rect").data(cur_team_data);
+          cur_rects = svg.selectAll("#bargraph").data(cur_team_data);
 
           // Add bars
           cur_rects.enter()
@@ -319,6 +408,7 @@ Set description up top
             .merge(cur_rects)
             .transition().duration(400)
             .duration(1000)
+                .attr("id", "bargraph")
                 .attr("width", x.bandwidth())
                 .attr("height", function (d) {
                   // console.log(height-y(d.AttendG.replace(/\,/g,'')));
@@ -336,6 +426,8 @@ Set description up top
                   }
                   else
                     return d.TmColor; });
+
+          cur_rects.exit().remove();
 
           svg.selectAll("rect").data(cur_team_data)
             .append("svg:title")
@@ -370,12 +462,49 @@ Set description up top
             .style("font-size", "20px") 
             .text("Avg " + Math.round(avg));
 
+          key_width = 175;
+          // Add a key
+          svg.selectAll("#key").remove();
+          svg.append("rect")
+            .attr("id", "key")
+            .attr("stroke-width", 2)
+            .attr("width", key_width)
+            .attr("height", 26)
+            .attr("x", width-key_width)
+            .attr("y", 0)
+            .attr("fill", "white")
+            .attr("fill-opacity", ".4");
+
+          svg.selectAll("#keyfill").remove();
+          svg.append("rect")
+            .attr("id", "keyfill")
+            .attr("stroke-width", 2)
+            .attr("width", 20)
+            .attr("height", 20)
+            .attr("x", width-(key_width-3))
+            .attr("y", 3)
+            .attr("fill", 'url(#ws_background)')
+            .attr("fill-opacity", ".8");
+
+          // Key text
+          svg.selectAll("#keytxt").remove();
+          svg.append("text")
+            .attr("id", "keytxt")
+            .attr("x", function() {
+              return width-(key_width-29)
+            })
+            .attr("y", 18)
+            .style("font-size", function() { 
+              return "16px"
+            })
+            .text(function() {
+              return "World Series Winner";
+            });
+
           // Tooltips on bars
           svg.selectAll("rect").data(cur_team_data)
             .on("mouseover", mouseover)
             .on("mouseleave", mouseleave);
-
-          cur_rects.exit().remove();
         }
       });
     </script>
