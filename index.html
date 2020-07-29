@@ -89,7 +89,7 @@
     </div>
     <script>
       // Start year
-      var cur_year = 2019;
+      var cur_year = 1969;
 
       // set the dimensions and margins of the graph
       var margin = {top: 30, right: 30, bottom: 30, left: 60},
@@ -162,7 +162,7 @@
           .width(width)
           .tickFormat(dateTime => dateTime % 2 ? dateTime : "")
           .tickValues(dataTime)
-          .default(2019)
+          .default(1969)
           .on('end', num => {
             cur_year = num;
             drawMainCanvas(cur_year);
