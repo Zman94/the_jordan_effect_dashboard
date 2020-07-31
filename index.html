@@ -163,12 +163,10 @@
           .tickFormat(dateTime => dateTime % 2 ? dateTime : "")
           .tickValues(dataTime)
           .default(1969)
-          .on('end', num => {
-            cur_year = num;
-            drawMainCanvas(cur_year);
-          })
           .on('onchange', num => {
             d3.select('p#value-time').text(num);
+            cur_year = num;
+            drawMainCanvas(cur_year);
           });
 
         var gTime = d3.select('div#slider-time')
