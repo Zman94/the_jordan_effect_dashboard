@@ -32,7 +32,7 @@
   }
 </style>
 <div class="header">
-  <img src="https://clipartart.com/images/red-sox-world-series-trophy-clipart-4.png"/>
+  <img src="https://raw.githubusercontent.com/Zman94/the_jordan_effect_dashboard/master/data/WS.png"/>
   <h1 style="font-family: Helvetica">Winning Sales</h1>
   <h3 style="font-family: Helvetica">Understanding how winning the World Series<br>affects a team's ticket sales.</h3>
   <p>This dashboard explores the effect that winning has on ticket sales in baseball over the past 50 years.<br>
@@ -236,12 +236,29 @@
           xAxis.transition().duration(400).call(d3.axisBottom(x))
             .selectAll("text")
             .attr("transform", "translate(-10,0)rotate(-45)")
-            .style("text-anchor", "end");;
+            .style("text-anchor", "end");
+
+          svg.selectAll("#xLabel").remove();
+          svg.append("text")
+            .attr("id", "xLabel")
+            .attr("text-anchor", "end")
+            .attr("x", width+30)
+            .attr("y", height+20)
+            .text("Teams");
 
           // Update the Y axis
           y_max = d3.max(cur_year_data, function(d) { return Number(d.AttendG.replace(/\,/g,'')) });
           y.domain([0, y_max]);
           yAxis.transition().duration(400).call(d3.axisLeft(y));
+
+          svg.selectAll("#yLabel").remove();
+          svg.append("text")
+            .attr("id", "yLabel")
+            .attr("text-anchor", "end")
+            .attr("y", 6)
+            .attr("dy", ".75em")
+            .attr("transform", "rotate(-90)")
+            .text("Avg. Ticket Sales");
 
           cur_rects = svg.selectAll("#bargraph").data(cur_year_data);
 
