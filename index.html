@@ -409,10 +409,29 @@
             .attr("transform", "translate(-10,0)rotate(-45)")
             .style("text-anchor", "end");;
 
+          svg.selectAll("#xLabel").remove();
+          svg.append("text")
+            .attr("id", "xLabel")
+            .attr("text-anchor", "end")
+            .attr("x", width+30)
+            .attr("y", height+20)
+            .text("Years");
+
+
           // Update the Y axis
           y_max = d3.max(cur_team_data, function(d) { return Number(d.AttendG.replace(/\,/g,'')) });
           y.domain([0, y_max]);
           yAxis.transition().duration(400).call(d3.axisLeft(y));
+
+          svg.selectAll("#yLabel").remove();
+          svg.append("text")
+            .attr("id", "yLabel")
+            .attr("text-anchor", "end")
+            .attr("y", 6)
+            .attr("dy", ".75em")
+            .attr("transform", "rotate(-90)")
+            .text("Avg. Ticket Sales");
+
 
           cur_rects = svg.selectAll("#bargraph").data(cur_team_data);
 
